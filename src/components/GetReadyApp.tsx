@@ -17,7 +17,7 @@ import {
   loadState, saveState, computeRoutineScore, BONUS,
   type AppState, type ChecklistItem, type ItemStatus, type RoutineKey
 } from "@/lib/storage";
-import { translations, type Lang } from "@/lib/i18n";
+import { translations, type Lang, type Dictionary } from "@/lib/i18n";
 import { iconKeys, getIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
