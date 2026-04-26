@@ -515,7 +515,7 @@ function RoutineView({
             transition={{ type: "spring", stiffness: 200, damping: 22 }}
           >
             <ItemCard
-              item={item} t={t} lang={state.lang}
+              item={item} t={t} lang={lang}
               onStatus={(s) => onStatus(item.id, s)}
               onUpdate={onUpdate}
               onDelete={() => onDelete(item.id)}
@@ -529,7 +529,7 @@ function RoutineView({
         <div className="text-center py-10 text-muted-foreground">{t.addFirst}</div>
       )}
 
-      <AddOrEditDialog t={t} lang={state.lang} onSave={onAdd} mode="add" />
+      <AddOrEditDialog t={t} lang={lang} onSave={onAdd} mode="add" />
     </div>
   );
 }
