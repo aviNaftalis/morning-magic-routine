@@ -98,6 +98,16 @@ export const translations: Record<Lang, Dictionary> = {
     almostThere: "כמעט שם!",
     youDidIt: "כל הכבוד!",
     addFirst: "הוסיפו משימה ראשונה כדי להתחיל",
+    users: "ילדים",
+    addUser: "הוסף ילד/ה",
+    userName: "שם",
+    userEmoji: "אווטאר",
+    switchUser: "החלף ילד/ה",
+    manageUsers: "ניהול ילדים",
+    deleteUser: "מחק ילד/ה",
+    confirmDeleteUser: "למחוק את הילד/ה ואת כל ההתקדמות?",
+    cantDeleteLast: "צריך לפחות ילד/ה אחד",
+    editUser: "ערוך ילד/ה",
   },
 };
 
