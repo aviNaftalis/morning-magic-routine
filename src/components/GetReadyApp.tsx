@@ -451,10 +451,11 @@ function ResetButton({ t, onReset }: { t: Dictionary; onReset: () => void }) {
 }
 
 function RoutineView({
-  routineKey, state, t, isRtl, onStatus, onAdd, onUpdate, onDelete,
+  routineKey, user, lang, t, isRtl, onStatus, onAdd, onUpdate, onDelete,
 }: {
   routineKey: RoutineKey;
-  state: AppState;
+  user: UserProfile;
+  lang: Lang;
   t: Dictionary;
   isRtl: boolean;
   onStatus: (id: string, s: ItemStatus) => void;
@@ -462,7 +463,7 @@ function RoutineView({
   onUpdate: (i: ChecklistItem) => void;
   onDelete: (id: string) => void;
 }) {
-  const r = state[routineKey];
+  const r = user[routineKey];
   const { score, bonus, allDone, allAlone } = computeRoutineScore(r);
   const total = r.items.length;
   const completed = r.items.filter((i) => i.status !== "none").length;
