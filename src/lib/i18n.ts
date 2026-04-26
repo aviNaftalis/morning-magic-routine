@@ -86,6 +86,6 @@ export const translations: Record<Lang, Dictionary> = {
     youDidIt: "כל הכבוד!",
     addFirst: "הוסיפו משימה ראשונה כדי להתחיל",
   },
-} as const;
+};
 
-export type TranslationKey = keyof typeof translations.en;
+export type TranslationKey = keyof Dictionary;
