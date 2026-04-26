@@ -39,6 +39,22 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        morning: {
+          DEFAULT: "hsl(var(--morning))",
+          glow: "hsl(var(--morning-glow))",
+        },
+        evening: {
+          DEFAULT: "hsl(var(--evening))",
+          glow: "hsl(var(--evening-glow))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
