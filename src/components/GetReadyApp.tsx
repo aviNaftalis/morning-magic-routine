@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { Languages, Plus, RotateCcw, Settings2, Sun, Moon, Trophy, Flame, Star } from "lucide-react";
+import { Languages, Plus, RotateCcw, Settings2, Sun, Moon, Trophy, Flame, Star, Users, Pencil, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger
@@ -14,12 +14,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  loadState, saveState, computeRoutineScore, BONUS,
-  type AppState, type ChecklistItem, type ItemStatus, type RoutineKey
+  loadState, saveState, computeRoutineScore, getActiveUser, updateActiveUser, newUser,
+  type AppState, type ChecklistItem, type ItemStatus, type RoutineKey, type UserProfile,
 } from "@/lib/storage";
 import { translations, type Lang, type Dictionary } from "@/lib/i18n";
 import { iconKeys, getIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
+
+const AVATAR_OPTIONS = ["👧", "👦", "🧒", "👶", "🦄", "🐯", "🦊", "🐼", "🐰", "🐶", "🐸", "⭐", "🌈", "🚀"];
 
 const triggerConfetti = (kind: "all" | "champion") => {
   const colors = kind === "champion"
@@ -37,88 +39,119 @@ export default function GetReadyApp() {
   const [tab, setTab] = useState<RoutineKey>(() => new Date().getHours() < 16 ? "morning" : "evening");
   const t = translations[state.lang];
   const isRtl = state.lang === "he";
-  const lastBonus = useRef<{ morning: string; evening: string }>({ morning: state.morning.bonusAwarded, evening: state.evening.bonusAwarded });
+  const activeUser = getActiveUser(state);
 
   useEffect(() => { saveState(state); }, [state]);
 
   useEffect(() => {
     document.documentElement.lang = state.lang;
     document.documentElement.dir = isRtl ? "rtl" : "ltr";
-    document.title = `${t.appTitle} • ${t.morning} / ${t.evening}`;
-  }, [state.lang, isRtl, t]);
+    document.title = `${t.appTitle} • ${activeUser.name}`;
+  }, [state.lang, isRtl, t, activeUser.name]);
 
+  // Bonus celebration + totals tracking — runs per active user
   useEffect(() => {
     (["morning", "evening"] as RoutineKey[]).forEach((k) => {
-      const r = state[k];
+      const r = activeUser[k];
       const { allDone, allAlone } = computeRoutineScore(r);
       const newBonus = allAlone ? "champion" : allDone ? "all" : "none";
       if (newBonus !== r.bonusAwarded) {
         if (newBonus === "all" || newBonus === "champion") {
           triggerConfetti(newBonus);
         }
-        setState((prev) => {
-          const updated = { ...prev, [k]: { ...prev[k], bonusAwarded: newBonus } } as AppState;
+        setState((prev) => updateActiveUser(prev, (u) => {
+          const updated: UserProfile = { ...u, [k]: { ...u[k], bonusAwarded: newBonus } } as UserProfile;
           const mScore = computeRoutineScore(updated.morning);
           const eScore = computeRoutineScore(updated.evening);
           const today = mScore.score + mScore.bonus + eScore.score + eScore.bonus;
-          const best = Math.max(prev.totals.best, today);
-          let streak = prev.totals.streak;
-          let lastDate = prev.totals.lastDate;
+          const best = Math.max(u.totals.best, today);
+          let streak = u.totals.streak;
+          let lastDate = u.totals.lastDate;
           if ((mScore.allDone || eScore.allDone) && lastDate !== updated.morning.date) {
             const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
             streak = lastDate === yesterday ? streak + 1 : 1;
             lastDate = updated.morning.date;
           }
           return { ...updated, totals: { today, best, streak, lastDate } };
-        });
+        }));
       }
     });
-  }, [state.morning.items, state.evening.items]);
+  }, [activeUser.morning.items, activeUser.evening.items, activeUser.id]);
 
+  // Recompute today's running score
   useEffect(() => {
-    const mScore = computeRoutineScore(state.morning);
-    const eScore = computeRoutineScore(state.evening);
+    const mScore = computeRoutineScore(activeUser.morning);
+    const eScore = computeRoutineScore(activeUser.evening);
     const today = mScore.score + mScore.bonus + eScore.score + eScore.bonus;
-    if (today !== state.totals.today || today > state.totals.best) {
-      setState((p) => ({ ...p, totals: { ...p.totals, today, best: Math.max(p.totals.best, today) } }));
+    if (today !== activeUser.totals.today || today > activeUser.totals.best) {
+      setState((p) => updateActiveUser(p, (u) => ({
+        ...u,
+        totals: { ...u.totals, today, best: Math.max(u.totals.best, today) },
+      })));
     }
-  }, [state.morning.items, state.evening.items]);
+  }, [activeUser.morning.items, activeUser.evening.items, activeUser.id]);
 
   const setStatus = (routine: RoutineKey, id: string, status: ItemStatus) => {
-    setState((p) => ({
-      ...p,
-      [routine]: {
-        ...p[routine],
-        items: p[routine].items.map((i) => (i.id === id ? { ...i, status } : i)),
-      },
-    }));
+    setState((p) => updateActiveUser(p, (u) => ({
+      ...u,
+      [routine]: { ...u[routine], items: u[routine].items.map((i) => (i.id === id ? { ...i, status } : i)) },
+    })));
   };
 
   const addItem = (routine: RoutineKey, item: ChecklistItem) => {
-    setState((p) => ({ ...p, [routine]: { ...p[routine], items: [...p[routine].items, item] } }));
+    setState((p) => updateActiveUser(p, (u) => ({
+      ...u,
+      [routine]: { ...u[routine], items: [...u[routine].items, item] },
+    })));
   };
 
   const updateItem = (routine: RoutineKey, item: ChecklistItem) => {
-    setState((p) => ({
-      ...p,
-      [routine]: { ...p[routine], items: p[routine].items.map((i) => (i.id === item.id ? item : i)) },
-    }));
+    setState((p) => updateActiveUser(p, (u) => ({
+      ...u,
+      [routine]: { ...u[routine], items: u[routine].items.map((i) => (i.id === item.id ? item : i)) },
+    })));
   };
 
   const deleteItem = (routine: RoutineKey, id: string) => {
-    setState((p) => ({ ...p, [routine]: { ...p[routine], items: p[routine].items.filter((i) => i.id !== id) } }));
+    setState((p) => updateActiveUser(p, (u) => ({
+      ...u,
+      [routine]: { ...u[routine], items: u[routine].items.filter((i) => i.id !== id) },
+    })));
   };
 
   const resetDay = () => {
-    setState((p) => ({
-      ...p,
-      morning: { ...p.morning, items: p.morning.items.map((i) => ({ ...i, status: "none" })), bonusAwarded: "none" },
-      evening: { ...p.evening, items: p.evening.items.map((i) => ({ ...i, status: "none" })), bonusAwarded: "none" },
-      totals: { ...p.totals, today: 0 },
-    }));
+    setState((p) => updateActiveUser(p, (u) => ({
+      ...u,
+      morning: { ...u.morning, items: u.morning.items.map((i) => ({ ...i, status: "none" })), bonusAwarded: "none" },
+      evening: { ...u.evening, items: u.evening.items.map((i) => ({ ...i, status: "none" })), bonusAwarded: "none" },
+      totals: { ...u.totals, today: 0 },
+    })));
   };
 
   const toggleLang = () => setState((p) => ({ ...p, lang: p.lang === "en" ? "he" : "en" }));
+
+  const switchUser = (id: string) => setState((p) => ({ ...p, activeUserId: id }));
+
+  const addUser = (name: string, emoji: string) => {
+    const u = newUser(name.trim() || "Kid", emoji);
+    setState((p) => ({ ...p, users: [...p.users, u], activeUserId: u.id }));
+  };
+
+  const updateUser = (id: string, name: string, emoji: string) => {
+    setState((p) => ({
+      ...p,
+      users: p.users.map((u) => (u.id === id ? { ...u, name: name.trim() || u.name, emoji } : u)),
+    }));
+  };
+
+  const removeUser = (id: string) => {
+    setState((p) => {
+      if (p.users.length <= 1) return p;
+      const users = p.users.filter((u) => u.id !== id);
+      const activeUserId = p.activeUserId === id ? users[0].id : p.activeUserId;
+      return { ...p, users, activeUserId };
+    });
+  };
 
   const headerGradient = tab === "morning" ? "bg-gradient-morning" : "bg-gradient-evening";
   const greeting = tab === "morning" ? t.goodMorning : t.goodEvening;
@@ -141,16 +174,16 @@ export default function GetReadyApp() {
         </div>
 
         <div className="relative max-w-2xl mx-auto px-5 pt-6 pb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 min-w-0">
               <motion.div
-                className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center"
+                className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0"
                 animate={{ rotate: [0, 8, -8, 0] }}
                 transition={{ duration: 3, repeat: Infinity }}
               >
                 {tab === "morning" ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
               </motion.div>
-              <h1 className="text-2xl font-bold tracking-tight">{t.appTitle}</h1>
+              <h1 className="text-2xl font-bold tracking-tight truncate">{t.appTitle}</h1>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -166,12 +199,24 @@ export default function GetReadyApp() {
             </div>
           </div>
 
-          <p className="text-white/90 text-lg font-medium mb-4">{greeting}</p>
+          <UserSwitcher
+            t={t}
+            users={state.users}
+            activeId={state.activeUserId}
+            onSwitch={switchUser}
+            onAdd={addUser}
+            onUpdate={updateUser}
+            onRemove={removeUser}
+          />
+
+          <p className="text-white/90 text-lg font-medium mt-4 mb-3">
+            {greeting} <span className="font-bold">{activeUser.name}!</span>
+          </p>
 
           <div className="grid grid-cols-3 gap-2">
-            <Stat icon={<Star className="w-4 h-4" />} label={t.today} value={state.totals.today} />
-            <Stat icon={<Trophy className="w-4 h-4" />} label={t.best} value={state.totals.best} />
-            <Stat icon={<Flame className="w-4 h-4" />} label={t.streak} value={state.totals.streak} />
+            <Stat icon={<Star className="w-4 h-4" />} label={t.today} value={activeUser.totals.today} />
+            <Stat icon={<Trophy className="w-4 h-4" />} label={t.best} value={activeUser.totals.best} />
+            <Stat icon={<Flame className="w-4 h-4" />} label={t.streak} value={activeUser.totals.streak} />
           </div>
         </div>
       </header>
@@ -188,10 +233,11 @@ export default function GetReadyApp() {
           </TabsList>
 
           {(["morning", "evening"] as RoutineKey[]).map((k) => (
-            <TabsContent key={k} value={k} className="mt-5 space-y-3">
+            <TabsContent key={`${activeUser.id}-${k}`} value={k} className="mt-5 space-y-3">
               <RoutineView
                 routineKey={k}
-                state={state}
+                user={activeUser}
+                lang={state.lang}
                 t={t}
                 isRtl={isRtl}
                 onStatus={(id, s) => setStatus(k, id, s)}
@@ -206,6 +252,170 @@ export default function GetReadyApp() {
     </div>
   );
 }
+
+function UserSwitcher({
+  t, users, activeId, onSwitch, onAdd, onUpdate, onRemove,
+}: {
+  t: Dictionary;
+  users: UserProfile[];
+  activeId: string;
+  onSwitch: (id: string) => void;
+  onAdd: (name: string, emoji: string) => void;
+  onUpdate: (id: string, name: string, emoji: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [manageOpen, setManageOpen] = useState(false);
+  return (
+    <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1">
+      {users.map((u) => {
+        const active = u.id === activeId;
+        return (
+          <button
+            key={u.id}
+            onClick={() => onSwitch(u.id)}
+            className={cn(
+              "shrink-0 flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-all",
+              active
+                ? "bg-white text-foreground shadow-md scale-105"
+                : "bg-white/20 text-white hover:bg-white/30"
+            )}
+          >
+            <span className="text-lg leading-none">{u.emoji}</span>
+            <span className="max-w-[100px] truncate">{u.name}</span>
+          </button>
+        );
+      })}
+      <Dialog open={manageOpen} onOpenChange={setManageOpen}>
+        <DialogTrigger asChild>
+          <button
+            className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold bg-white/15 text-white hover:bg-white/25"
+            aria-label={t.manageUsers}
+          >
+            <Users className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </DialogTrigger>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>{t.manageUsers}</DialogTitle>
+          </DialogHeader>
+          <ManageUsersBody
+            t={t}
+            users={users}
+            onAdd={onAdd}
+            onUpdate={onUpdate}
+            onRemove={onRemove}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function ManageUsersBody({
+  t, users, onAdd, onUpdate, onRemove,
+}: {
+  t: Dictionary;
+  users: UserProfile[];
+  onAdd: (name: string, emoji: string) => void;
+  onUpdate: (id: string, name: string, emoji: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [emoji, setEmoji] = useState("⭐");
+  const [adding, setAdding] = useState(false);
+
+  const startAdd = () => { setAdding(true); setEditingId(null); setName(""); setEmoji("⭐"); };
+  const startEdit = (u: UserProfile) => { setEditingId(u.id); setAdding(false); setName(u.name); setEmoji(u.emoji); };
+  const cancel = () => { setEditingId(null); setAdding(false); };
+  const submit = () => {
+    if (adding) onAdd(name, emoji);
+    else if (editingId) onUpdate(editingId, name, emoji);
+    cancel();
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-2">
+        {users.map((u) => (
+          <div key={u.id} className="flex items-center gap-2 rounded-2xl bg-muted/50 p-2">
+            <span className="text-2xl w-10 h-10 flex items-center justify-center bg-card rounded-xl shrink-0">{u.emoji}</span>
+            <span className="font-semibold flex-1 truncate">{u.name}</span>
+            <Button size="icon" variant="ghost" className="rounded-full h-9 w-9" onClick={() => startEdit(u)} aria-label={t.editUser}>
+              <Pencil className="w-4 h-4" />
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="rounded-full h-9 w-9 text-destructive"
+                  disabled={users.length <= 1}
+                  aria-label={t.deleteUser}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t.deleteUser}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {users.length <= 1 ? t.cantDeleteLast : t.confirmDeleteUser}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t.no}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onRemove(u.id)} disabled={users.length <= 1}>
+                    {t.yes}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        ))}
+      </div>
+
+      {(adding || editingId) ? (
+        <div className="space-y-3 rounded-2xl border-2 border-dashed border-border p-3">
+          <div className="space-y-2">
+            <Label htmlFor="user-name">{t.userName}</Label>
+            <Input id="user-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t.userName} />
+          </div>
+          <div className="space-y-2">
+            <Label>{t.userEmoji}</Label>
+            <div className="grid grid-cols-7 gap-1.5">
+              {AVATAR_OPTIONS.map((e) => (
+                <button
+                  key={e}
+                  onClick={() => setEmoji(e)}
+                  className={cn(
+                    "aspect-square rounded-xl text-2xl flex items-center justify-center transition-all",
+                    emoji === e ? "bg-gradient-fun shadow-md scale-110" : "bg-muted hover:bg-muted/70"
+                  )}
+                  aria-label={e}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="ghost" onClick={cancel} className="rounded-2xl">{t.cancel}</Button>
+            <Button onClick={submit} className="rounded-2xl bg-gradient-fun text-white gap-1">
+              <Check className="w-4 h-4" /> {t.save}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button onClick={startAdd} className="w-full rounded-2xl bg-gradient-fun text-white gap-2 h-12">
+          <Plus className="w-4 h-4" /> {t.addUser}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
@@ -241,10 +451,11 @@ function ResetButton({ t, onReset }: { t: Dictionary; onReset: () => void }) {
 }
 
 function RoutineView({
-  routineKey, state, t, isRtl, onStatus, onAdd, onUpdate, onDelete,
+  routineKey, user, lang, t, isRtl, onStatus, onAdd, onUpdate, onDelete,
 }: {
   routineKey: RoutineKey;
-  state: AppState;
+  user: UserProfile;
+  lang: Lang;
   t: Dictionary;
   isRtl: boolean;
   onStatus: (id: string, s: ItemStatus) => void;
@@ -252,7 +463,7 @@ function RoutineView({
   onUpdate: (i: ChecklistItem) => void;
   onDelete: (id: string) => void;
 }) {
-  const r = state[routineKey];
+  const r = user[routineKey];
   const { score, bonus, allDone, allAlone } = computeRoutineScore(r);
   const total = r.items.length;
   const completed = r.items.filter((i) => i.status !== "none").length;
@@ -304,7 +515,7 @@ function RoutineView({
             transition={{ type: "spring", stiffness: 200, damping: 22 }}
           >
             <ItemCard
-              item={item} t={t} lang={state.lang}
+              item={item} t={t} lang={lang}
               onStatus={(s) => onStatus(item.id, s)}
               onUpdate={onUpdate}
               onDelete={() => onDelete(item.id)}
@@ -318,7 +529,7 @@ function RoutineView({
         <div className="text-center py-10 text-muted-foreground">{t.addFirst}</div>
       )}
 
-      <AddOrEditDialog t={t} lang={state.lang} onSave={onAdd} mode="add" />
+      <AddOrEditDialog t={t} lang={lang} onSave={onAdd} mode="add" />
     </div>
   );
 }

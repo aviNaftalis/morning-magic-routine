@@ -9,6 +9,9 @@ export type Dictionary = {
   confirmDelete: string; yes: string; no: string; settings: string; language: string;
   points: string; progress: string; goodMorning: string; goodEvening: string;
   keepGoing: string; almostThere: string; youDidIt: string; addFirst: string;
+  users: string; addUser: string; userName: string; userEmoji: string;
+  switchUser: string; manageUsers: string; deleteUser: string;
+  confirmDeleteUser: string; cantDeleteLast: string; editUser: string;
 };
 
 export const translations: Record<Lang, Dictionary> = {
@@ -48,6 +51,16 @@ export const translations: Record<Lang, Dictionary> = {
     almostThere: "Almost there!",
     youDidIt: "You did it!",
     addFirst: "Add your first task to get started",
+    users: "Kids",
+    addUser: "Add a kid",
+    userName: "Name",
+    userEmoji: "Avatar",
+    switchUser: "Switch kid",
+    manageUsers: "Manage kids",
+    deleteUser: "Remove kid",
+    confirmDeleteUser: "Remove this kid and all their progress?",
+    cantDeleteLast: "You need at least one kid",
+    editUser: "Edit kid",
   },
   he: {
     appTitle: "מתכוננים!",
@@ -85,6 +98,16 @@ export const translations: Record<Lang, Dictionary> = {
     almostThere: "כמעט שם!",
     youDidIt: "כל הכבוד!",
     addFirst: "הוסיפו משימה ראשונה כדי להתחיל",
+    users: "ילדים",
+    addUser: "הוסף ילד/ה",
+    userName: "שם",
+    userEmoji: "אווטאר",
+    switchUser: "החלף ילד/ה",
+    manageUsers: "ניהול ילדים",
+    deleteUser: "מחק ילד/ה",
+    confirmDeleteUser: "למחוק את הילד/ה ואת כל ההתקדמות?",
+    cantDeleteLast: "צריך לפחות ילד/ה אחד",
+    editUser: "ערוך ילד/ה",
   },
 };
 
