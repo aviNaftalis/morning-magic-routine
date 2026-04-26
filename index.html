@@ -1,30 +1,1182 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Morning Star Habits is a bilingual routine builder and checklist app for motivation and task management.">
-    <meta name="author" content="Lovable" />
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Get Ready!</title>
+  <meta name="description" content="A fun bilingual morning &amp; evening routine checklist for kids">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⭐</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <!-- TODO: Update og:title to match your application name -->
-    
-    
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/149f5e37-1ebc-4814-bb86-3817a11a1367/id-preview-d895616b--777ad887-f9a4-4268-bfda-bc3ae5de0f6d.lovable.app-1777184401350.png">
+    :root {
+      --bg: hsl(45, 100%, 97%);
+      --fg: hsl(250, 40%, 18%);
+      --card: #ffffff;
+      --muted: hsl(250, 30%, 94%);
+      --muted-fg: hsl(250, 15%, 45%);
+      --border: hsl(250, 30%, 88%);
+      --success: hsl(145, 70%, 48%);
+      --warning: hsl(40, 100%, 55%);
+      --danger: hsl(0, 85%, 62%);
+      --ring: hsl(270, 85%, 62%);
+      --radius: 1.25rem;
+      --gradient-morning: linear-gradient(135deg, hsl(35, 100%, 65%), hsl(15, 100%, 65%) 50%, hsl(330, 90%, 65%));
+      --gradient-evening: linear-gradient(135deg, hsl(250, 70%, 35%), hsl(270, 80%, 50%) 50%, hsl(310, 70%, 55%));
+      --gradient-fun: linear-gradient(135deg, hsl(270, 85%, 62%), hsl(190, 90%, 55%));
+      --gradient-success: linear-gradient(135deg, hsl(145, 70%, 48%), hsl(170, 80%, 50%));
+      --shadow-soft: 0 4px 20px -4px hsla(270, 60%, 50%, 0.15);
+      --shadow-pop: 0 8px 0 -2px hsla(270, 60%, 35%, 0.2), 0 12px 30px -8px hsla(270, 60%, 50%, 0.35);
+    }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/149f5e37-1ebc-4814-bb86-3817a11a1367/id-preview-d895616b--777ad887-f9a4-4268-bfda-bc3ae5de0f6d.lovable.app-1777184401350.png">
-    <meta property="og:title" content="Lovable App">
-  <meta name="twitter:title" content="Lovable App">
-  <meta property="og:description" content="Morning Star Habits is a bilingual routine builder and checklist app for motivation and task management.">
-  <meta name="twitter:description" content="Morning Star Habits is a bilingual routine builder and checklist app for motivation and task management.">
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Fredoka', 'Heebo', system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    html[dir="rtl"] body { font-family: 'Heebo', 'Fredoka', system-ui, sans-serif; }
+
+    /* ===== HEADER ===== */
+    .header { position: relative; overflow: hidden; color: #fff; }
+    .header-morning { background-image: var(--gradient-morning); }
+    .header-evening { background-image: var(--gradient-evening); }
+    .header-inner { position: relative; max-width: 672px; margin: 0 auto; padding: 1.5rem 1.25rem 2rem; }
+
+    .floating-decor { position: absolute; inset: 0; opacity: 0.3; pointer-events: none; overflow: hidden; }
+    .float-icon {
+      position: absolute;
+      animation: float-dec var(--dur) ease-in-out infinite;
+      animation-delay: var(--delay);
+    }
+    .float-icon svg { width: 2rem; height: 2rem; }
+
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .title-area { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+    .title-icon-box {
+      width: 2.5rem; height: 2.5rem; border-radius: var(--radius);
+      background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      animation: wiggle 3s ease-in-out infinite;
+    }
+    .title-icon-box svg { width: 1.5rem; height: 1.5rem; }
+    h1.app-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-btns { display: flex; align-items: center; gap: 0.5rem; }
+
+    .btn-h {
+      background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 9999px;
+      height: 2.25rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;
+      font-family: inherit; font-weight: 700; font-size: 0.75rem; transition: background 0.2s;
+    }
+    .btn-h:hover { background: rgba(255,255,255,0.25); }
+    .btn-h-icon { padding: 0; width: 2.25rem; justify-content: center; }
+    .btn-h-text { padding: 0 0.75rem; }
+    .btn-h svg { width: 1rem; height: 1rem; }
+
+    /* ===== USER SWITCHER ===== */
+    .user-switcher {
+      display: flex; align-items: center; gap: 0.5rem;
+      overflow-x: auto; margin: 0 -0.25rem; padding: 0 0.25rem 0.25rem;
+      scrollbar-width: none;
+    }
+    .user-switcher::-webkit-scrollbar { display: none; }
+    .user-pill {
+      flex-shrink: 0; display: flex; align-items: center; gap: 0.5rem;
+      border-radius: 9999px; padding: 0.375rem 0.75rem; font-size: 0.875rem;
+      font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .upill-active { background: #fff; color: var(--fg); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transform: scale(1.05); }
+    .upill-inactive { background: rgba(255,255,255,0.2); color: #fff; }
+    .upill-inactive:hover { background: rgba(255,255,255,0.3); }
+    .upill-emoji { font-size: 1.125rem; line-height: 1; }
+    .upill-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .manage-btn {
+      flex-shrink: 0; display: flex; align-items: center; gap: 0.25rem;
+      border-radius: 9999px; padding: 0.375rem 0.75rem; font-size: 0.875rem;
+      font-weight: 600; border: none; cursor: pointer; font-family: inherit;
+      background: rgba(255,255,255,0.15); color: #fff; transition: background 0.2s;
+    }
+    .manage-btn:hover { background: rgba(255,255,255,0.25); }
+    .manage-btn svg { width: 1rem; height: 1rem; }
+
+    /* ===== GREETING ===== */
+    .greeting { color: rgba(255,255,255,0.9); font-size: 1.125rem; font-weight: 500; margin: 1rem 0 0.75rem; }
+    .greeting b { font-weight: 700; }
+
+    /* ===== STATS ===== */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .stat-card {
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-radius: var(--radius); padding: 0.5rem 0.75rem; text-align: center;
+    }
+    .stat-label {
+      display: flex; align-items: center; justify-content: center; gap: 0.25rem;
+      color: rgba(255,255,255,0.8); font-size: 0.75rem; font-weight: 500;
+    }
+    .stat-label svg { width: 1rem; height: 1rem; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+
+    /* ===== MAIN ===== */
+    .main-content { max-width: 672px; margin: 0 auto; padding: 0 1rem 3rem; }
+
+    /* ===== TABS ===== */
+    .tab-bar {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--card); box-shadow: var(--shadow-pop); border-radius: var(--radius);
+      padding: 0.375rem; border: 1px solid rgba(0,0,0,0.06); margin-top: -1rem;
+    }
+    .tab-btn {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.75rem; border-radius: calc(var(--radius) - 0.125rem);
+      font-size: 1rem; font-weight: 600; border: none; cursor: pointer;
+      background: transparent; color: var(--muted-fg); transition: all 0.2s; font-family: inherit;
+    }
+    .tab-btn svg { width: 1.25rem; height: 1.25rem; }
+    .tab-active-morning { background-image: var(--gradient-morning); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .tab-active-evening { background-image: var(--gradient-evening); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+    /* ===== ROUTINE ===== */
+    .routine-section { margin-top: 1.25rem; }
+
+    /* ===== PROGRESS CARD ===== */
+    .progress-card {
+      background: var(--card); border-radius: 1.5rem; padding: 1rem;
+      box-shadow: var(--shadow-soft); border: 1px solid rgba(0,0,0,0.06);
+    }
+    .progress-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .progress-label { font-size: 0.875rem; font-weight: 600; color: var(--muted-fg); }
+    .progress-value { font-size: 0.875rem; font-weight: 700; }
+    .progress-track { height: 0.75rem; background: var(--muted); border-radius: 9999px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 9999px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .pfill-morning { background-image: var(--gradient-morning); }
+    .pfill-evening { background-image: var(--gradient-evening); }
+
+    /* ===== BONUS BANNER ===== */
+    .bonus-banner {
+      margin-top: 0.75rem; border-radius: var(--radius); padding: 0.75rem 1rem;
+      color: #fff; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;
+      animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bonus-banner svg { width: 1.25rem; height: 1.25rem; }
+    .bonus-all { background-image: var(--gradient-fun); }
+    .bonus-champ { background-image: var(--gradient-success); }
+    .bonus-label { flex: 1; }
+    .bonus-pts { background: rgba(255,255,255,0.25); border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.875rem; }
+
+    /* ===== TASK LIST ===== */
+    .task-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem; }
+
+    /* ===== TASK CARD ===== */
+    .task-card {
+      background: var(--card); border-radius: 1.5rem; padding: 0.75rem;
+      box-shadow: var(--shadow-soft); border: 2px solid var(--border); transition: all 0.3s;
+    }
+    .task-card-alone { border-color: hsla(145, 70%, 48%, 0.6); background: hsla(145, 70%, 48%, 0.05); }
+    .task-card-help { border-color: hsla(40, 100%, 55%, 0.6); background: hsla(40, 100%, 55%, 0.05); }
+
+    .task-top { display: flex; align-items: center; gap: 0.75rem; }
+    .task-icon {
+      width: 3.5rem; height: 3.5rem; border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.3s;
+    }
+    .task-icon svg { width: 1.75rem; height: 1.75rem; }
+    .ticon-off { background: var(--muted); color: var(--muted-fg); }
+    .ticon-on { background-image: var(--gradient-fun); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+    .task-info { flex: 1; min-width: 0; }
+    .task-label { font-weight: 600; font-size: 1rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .task-sub { font-size: 0.75rem; color: var(--muted-fg); margin-top: 0.125rem; }
+
+    .task-edit {
+      width: 2rem; height: 2rem; border-radius: 9999px; border: none;
+      background: transparent; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; color: var(--muted-fg); flex-shrink: 0;
+    }
+    .task-edit:hover { background: var(--muted); }
+    .task-edit svg { width: 1rem; height: 1rem; }
+
+    /* ===== STATUS BUTTONS ===== */
+    .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.75rem; }
+    .sbtn {
+      border-radius: var(--radius); padding: 0.625rem 0.5rem; font-size: 0.75rem;
+      font-weight: 700; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 0.125rem; border: none; cursor: pointer;
+      transition: all 0.15s; min-height: 52px; font-family: inherit;
+    }
+    .sbtn:active { transform: scale(0.92); }
+    .sbtn-pts { font-size: 10px; opacity: 0.8; }
+
+    .sn { background: var(--muted); color: var(--muted-fg); }
+    .sn:hover { opacity: 0.8; }
+    .sn-on { background: var(--muted-fg); color: var(--bg); }
+
+    .sh { background: hsla(40, 100%, 55%, 0.15); color: var(--fg); }
+    .sh:hover { background: hsla(40, 100%, 55%, 0.25); }
+    .sh-on { background: var(--warning); color: var(--fg); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transform: scale(1.05); }
+    .sh-on:active { transform: scale(0.97); }
+
+    .sa { background: hsla(145, 70%, 48%, 0.15); color: var(--success); }
+    .sa:hover { background: hsla(145, 70%, 48%, 0.25); }
+    .sa-on { background: var(--success); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transform: scale(1.05); }
+    .sa-on:active { transform: scale(0.97); }
+
+    /* ===== ADD TASK BUTTON ===== */
+    .add-btn {
+      width: 100%; height: 3.5rem; border-radius: 1.5rem;
+      background-image: var(--gradient-fun); color: #fff; font-weight: 700; font-size: 1rem;
+      border: none; cursor: pointer; box-shadow: var(--shadow-pop);
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      margin-top: 0.5rem; transition: opacity 0.2s; font-family: inherit;
+    }
+    .add-btn:hover { opacity: 0.9; }
+    .add-btn svg { width: 1.25rem; height: 1.25rem; }
+
+    .empty-state { text-align: center; padding: 2.5rem 0; color: var(--muted-fg); }
+
+    /* ===== MODALS ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-bg {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .modal-box {
+      position: relative; background: var(--card); border-radius: 1.5rem;
+      width: 100%; max-width: 28rem; max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: pop-in 0.25s ease-out;
+    }
+    .modal-sm { max-width: 22rem; }
+    .modal-header { padding: 1.25rem 1.5rem 0; }
+    .modal-title { font-size: 1.25rem; font-weight: 700; }
+    .modal-body { padding: 1rem 1.5rem; }
+    .modal-footer { padding: 0 1.5rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+    .modal-footer .spacer { flex: 1; }
+
+    /* ===== FORMS ===== */
+    .fg { margin-bottom: 1rem; }
+    .fl { display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.375rem; }
+    .inp {
+      width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.875rem; font-family: inherit;
+      background: var(--bg); color: var(--fg); outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .inp:focus { border-color: var(--ring); box-shadow: 0 0 0 3px hsla(270, 85%, 62%, 0.2); }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      padding: 0.5rem 1rem; border-radius: var(--radius); font-weight: 600;
+      font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.2s; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 0.25rem;
+    }
+    .btn-p { background-image: var(--gradient-fun); color: #fff; }
+    .btn-g { background: transparent; color: var(--muted-fg); }
+    .btn-g:hover { background: var(--muted); }
+    .btn-d { background: var(--danger); color: #fff; }
+    .btn-d:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-full {
+      width: 100%; height: 3rem; border-radius: var(--radius); background-image: var(--gradient-fun);
+      color: #fff; font-weight: 700; font-size: 1rem; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      font-family: inherit; transition: opacity 0.2s;
+    }
+    .btn-full:hover { opacity: 0.9; }
+    .btn-full svg { width: 1rem; height: 1rem; }
+
+    /* ===== ICON / AVATAR GRIDS ===== */
+    .icon-grid {
+      display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.5rem;
+      max-height: 200px; overflow-y: auto; padding: 0.25rem;
+    }
+    .icopt {
+      aspect-ratio: 1; border-radius: 0.75rem; display: flex; align-items: center;
+      justify-content: center; border: none; cursor: pointer; transition: all 0.2s;
+      background: var(--muted); color: var(--muted-fg);
+    }
+    .icopt svg { width: 1.25rem; height: 1.25rem; }
+    .icopt-on { background-image: var(--gradient-fun); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transform: scale(1.1); }
+
+    .avatar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.375rem; }
+    .avopt {
+      aspect-ratio: 1; border-radius: 0.75rem; display: flex; align-items: center;
+      justify-content: center; font-size: 1.5rem; border: none; cursor: pointer;
+      transition: all 0.2s; background: var(--muted);
+    }
+    .avopt-on { background-image: var(--gradient-fun); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transform: scale(1.1); }
+
+    /* ===== USER MANAGEMENT ===== */
+    .ulist { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .urow {
+      display: flex; align-items: center; gap: 0.5rem;
+      border-radius: var(--radius); background: hsla(250, 30%, 94%, 0.5); padding: 0.5rem;
+    }
+    .uav {
+      width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;
+      background: var(--card); border-radius: 0.75rem; font-size: 1.5rem; flex-shrink: 0;
+    }
+    .uname { font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ibtn {
+      width: 2.25rem; height: 2.25rem; border-radius: 9999px; border: none;
+      background: transparent; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: background 0.2s; color: var(--muted-fg);
+    }
+    .ibtn:hover { background: var(--muted); }
+    .ibtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .ibtn:disabled:hover { background: transparent; }
+    .ibtn-d { color: var(--danger); }
+    .ibtn-d:hover { background: hsla(0, 85%, 62%, 0.1); }
+    .ibtn svg { width: 1rem; height: 1rem; }
+
+    .uform {
+      border: 2px dashed var(--border); border-radius: var(--radius); padding: 0.75rem;
+    }
+    .uform-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.75rem; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+    @keyframes pop-in { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes float-dec {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      33% { transform: translateY(-12px) rotate(10deg); }
+      66% { transform: translateY(-4px) rotate(-10deg); }
+    }
+
+    /* ===== RTL ===== */
+    html[dir="rtl"] .header-top { flex-direction: row-reverse; }
+    html[dir="rtl"] .title-area { flex-direction: row-reverse; }
+    html[dir="rtl"] .header-btns { flex-direction: row-reverse; }
+    html[dir="rtl"] .user-switcher { flex-direction: row-reverse; }
+    html[dir="rtl"] .task-top { flex-direction: row-reverse; }
+    html[dir="rtl"] .task-info { text-align: right; }
+    html[dir="rtl"] .bonus-banner { flex-direction: row-reverse; }
+    html[dir="rtl"] .modal-footer { flex-direction: row-reverse; }
+    html[dir="rtl"] .uform-actions { flex-direction: row-reverse; }
+    html[dir="rtl"] .urow { flex-direction: row-reverse; }
+    html[dir="rtl"] .greeting { text-align: right; }
+    html[dir="rtl"] .progress-top { flex-direction: row-reverse; }
+    html[dir="rtl"] .progress-value { direction: ltr; }
+
+    /* ===== UTILITY ===== */
+    .hidden { display: none !important; }
+
+    @media (max-width: 400px) {
+      .icon-grid { grid-template-columns: repeat(6, 1fr); }
+      .stat-label { font-size: 0.65rem; }
+      .stat-value { font-size: 1.1rem; }
+    }
+  </style>
 </head>
+<body>
+  <div id="app"></div>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal-bg" data-action="close-modal"></div>
+    <div class="modal-box" id="modal-box"></div>
+  </div>
+  <div id="confirm-overlay" class="modal-overlay hidden">
+    <div class="modal-bg"></div>
+    <div class="modal-box modal-sm" id="confirm-box"></div>
+  </div>
+
+<script>
+/* ================================================
+   TRANSLATIONS
+   ================================================ */
+const T = {
+  en: {
+    appTitle:"Get Ready!", morning:"Morning", evening:"Evening",
+    addItem:"Add task", addItemPlaceholder:"What to do?", pickIcon:"Pick an icon",
+    save:"Save", cancel:"Cancel", delete:"Delete", edit:"Edit",
+    notDone:"Not yet", withHelp:"With help", alone:"By myself",
+    score:"Score", today:"Today", best:"Best", streak:"Streak", bonus:"Bonus!",
+    allDoneBonus:"All done!", allAloneBonus:"Champion! All by yourself!",
+    resetDay:"Reset day", confirmReset:"Reset all today's progress?",
+    confirmDelete:"Delete this task?", yes:"Yes", no:"No",
+    settings:"Settings", language:"Language", points:"pts", progress:"Progress",
+    goodMorning:"Good morning!", goodEvening:"Good evening!",
+    addFirst:"Add your first task to get started",
+    addUser:"Add a kid", userName:"Name", userEmoji:"Avatar",
+    manageUsers:"Manage kids", deleteUser:"Remove kid",
+    confirmDeleteUser:"Remove this kid and all their progress?",
+    cantDeleteLast:"You need at least one kid", editUser:"Edit kid",
+  },
+  he: {
+    appTitle:"מתכוננים!", morning:"בוקר", evening:"ערב",
+    addItem:"הוסף משימה", addItemPlaceholder:"מה צריך לעשות?", pickIcon:"בחר אייקון",
+    save:"שמור", cancel:"ביטול", delete:"מחק", edit:"ערוך",
+    notDone:"עדיין לא", withHelp:"עם עזרה", alone:"לבד",
+    score:"ניקוד", today:"היום", best:"שיא", streak:"רצף", bonus:"בונוס!",
+    allDoneBonus:"סיימת הכול!", allAloneBonus:"אלוף! הכול לבד!",
+    resetDay:"אפס יום", confirmReset:"לאפס את כל ההתקדמות של היום?",
+    confirmDelete:"למחוק את המשימה?", yes:"כן", no:"לא",
+    settings:"הגדרות", language:"שפה", points:"נק׳", progress:"התקדמות",
+    goodMorning:"בוקר טוב!", goodEvening:"ערב טוב!",
+    addFirst:"הוסיפו משימה ראשונה כדי להתחיל",
+    addUser:"הוסף ילד/ה", userName:"שם", userEmoji:"אווטאר",
+    manageUsers:"ניהול ילדים", deleteUser:"מחק ילד/ה",
+    confirmDeleteUser:"למחוק את הילד/ה ואת כל ההתקדמות?",
+    cantDeleteLast:"צריך לפחות ילד/ה אחד", editUser:"ערוך ילד/ה",
+  }
+};
+
+/* ================================================
+   ICONS
+   ================================================ */
+const CUSTOM_SVGS = {
+  toothbrush: '<path d="M14 10 L21 3"/><rect x="4" y="10" width="11" height="5" rx="1.5"/><path d="M5 10 V8"/><path d="M7.5 10 V7"/><path d="M10 10 V7"/><path d="M12.5 10 V8"/><circle cx="6" cy="18" r="1.2"/><circle cx="9" cy="19" r="0.8"/>',
+  sandals: '<path d="M6 18c-1.5 0-2.5-1-2.5-2.5S4 13 5.5 13h11c2 0 3.5 1.5 3.5 3s-1.5 2-3 2H6z"/><path d="M8 13 L11 9"/><path d="M14 13 L11 9"/><path d="M11 9 L11 7"/>',
+  skirt: '<path d="M7 6 H17"/><path d="M7 6 L3 20"/><path d="M17 6 L21 20"/><path d="M3 20 Q12 18 21 20"/><path d="M9 10 L8 20"/><path d="M15 10 L16 20"/>',
+  cream: '<path d="M8 3 H16 L15 6 H9 Z"/><rect x="7" y="6" width="10" height="15" rx="2"/><path d="M10 11 H14"/><circle cx="12" cy="14.5" r="1"/>',
+  hairbrush: '<path d="M14 14 L20 20"/><ellipse cx="10" cy="10" rx="6" ry="4" transform="rotate(-45 10 10)"/><path d="M6 6 L4 4"/><path d="M9 5 L8 3"/><path d="M12 6 L13 4"/><path d="M5 9 L3 8"/><path d="M6 12 L4 13"/>',
+  lunchbox: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7 V5 a1 1 0 0 1 1 -1 h4 a1 1 0 0 1 1 1 v2"/><path d="M3 12 H21"/><circle cx="17" cy="10" r="0.8"/>',
+};
+
+const LUCIDE_MAP = {
+  shirt:'shirt', pants:'footprints', brush:'paintbrush', bath:'bath', bed:'bed',
+  apple:'apple', cookie:'cookie', sandwich:'sandwich', salad:'salad',
+  backpack:'backpack', book:'book-open', toilet:'bath', water:'droplet',
+  sun:'sun', moon:'moon', star:'star', heart:'heart', smile:'smile',
+  sparkles:'sparkles', cloud:'cloud', coffee:'coffee', food:'utensils',
+  drink:'glass-water', pill:'pill', scissors:'scissors', watch:'watch',
+  glasses:'glasses', music:'music', game:'gamepad-2', hand:'hand',
+  feet:'footprints', wind:'wind', flower:'flower-2', palette:'palette',
+  trophy:'trophy', crown:'crown', rocket:'rocket',
+};
+
+const ALL_ICON_KEYS = [
+  'star','heart','sparkles','sun','moon','cloud','smile','trophy','crown','rocket',
+  'flower','shirt','skirt','sandals','toothbrush','hairbrush','cream','lunchbox',
+  'backpack','bed','bath','water','book','apple','cookie','sandwich','salad',
+  'coffee','food','drink','pill','scissors','watch','glasses','music','game',
+  'hand','feet','wind','palette','brush','pants',
+];
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function iconSvg(key) {
+  if (CUSTOM_SVGS[key]) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + CUSTOM_SVGS[key] + '</svg>';
+  }
+  const name = LUCIDE_MAP[key] || key;
+  return '<i data-lucide="' + name + '"></i>';
+}
+
+function processIcons() {
+  if (window.lucide) {
+    try { lucide.createIcons(); } catch(e) {}
+  }
+}
+
+/* ================================================
+   STATE MANAGEMENT
+   ================================================ */
+const KEY = 'getready.state.v1';
+const POINTS = { help: 1, alone: 2 };
+const BONUS = { all: 3, champion: 10 };
+const AVATARS = ["👧","👦","🧒","👶","🦄","🐯","🦊","🐼","🐰","🐶","🐸","⭐","🌈","🚀"];
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function defaultMorning() {
+  return [
+    {id:"m1",labelEn:"Get out of bed",labelHe:"לקום מהמיטה",icon:"bed",status:"none"},
+    {id:"m2",labelEn:"Use the toilet",labelHe:"ללכת לשירותים",icon:"toilet",status:"none"},
+    {id:"m3",labelEn:"Wash face",labelHe:"לשטוף פנים",icon:"water",status:"none"},
+    {id:"m4",labelEn:"Put on face cream",labelHe:"למרוח קרם פנים",icon:"cream",status:"none"},
+    {id:"m5",labelEn:"Brush teeth",labelHe:"לצחצח שיניים",icon:"toothbrush",status:"none"},
+    {id:"m6",labelEn:"Do hair",labelHe:"לסדר את השיער",icon:"hairbrush",status:"none"},
+    {id:"m7",labelEn:"Put on shirt",labelHe:"ללבוש חולצה",icon:"shirt",status:"none"},
+    {id:"m8",labelEn:"Put on skirt",labelHe:"ללבוש חצאית",icon:"skirt",status:"none"},
+    {id:"m9",labelEn:"Put on sandals",labelHe:"לנעול סנדלים",icon:"sandals",status:"none"},
+    {id:"m10",labelEn:"Put lunch box in backpack",labelHe:"להכניס קופסת אוכל לתיק",icon:"lunchbox",status:"none"},
+    {id:"m11",labelEn:"Pack backpack",labelHe:"להכין תיק",icon:"backpack",status:"none"},
+  ];
+}
+
+function defaultEvening() {
+  return [
+    {id:"e1",labelEn:"Tidy up toys",labelHe:"לסדר את הצעצועים",icon:"sparkles",status:"none"},
+    {id:"e2",labelEn:"Take a bath",labelHe:"להתקלח",icon:"bath",status:"none"},
+    {id:"e3",labelEn:"Put on pajamas",labelHe:"ללבוש פיג׳מה",icon:"shirt",status:"none"},
+    {id:"e4",labelEn:"Brush teeth",labelHe:"לצחצח שיניים",icon:"toothbrush",status:"none"},
+    {id:"e5",labelEn:"Read a story",labelHe:"לקרוא סיפור",icon:"book",status:"none"},
+    {id:"e6",labelEn:"Go to bed",labelHe:"ללכת לישון",icon:"moon",status:"none"},
+  ];
+}
+
+function newUser(name, emoji) {
+  return {
+    id: 'u' + Date.now() + Math.floor(Math.random()*1000),
+    name: name, emoji: emoji || '⭐',
+    morning: { items: defaultMorning(), bonusAwarded: 'none', date: todayStr() },
+    evening: { items: defaultEvening(), bonusAwarded: 'none', date: todayStr() },
+    totals: { today: 0, best: 0, streak: 0, lastDate: null },
+  };
+}
+
+function initialState() {
+  const a = newUser('Avigail', '👧');
+  return { lang: 'en', activeUserId: a.id, users: [a] };
+}
+
+function migrate(raw) {
+  if (raw && Array.isArray(raw.users)) return raw;
+  if (raw && raw.morning) {
+    const a = {
+      id: 'u' + Date.now(), name: 'Avigail', emoji: '👧',
+      morning: Object.assign({}, raw.morning, { items: defaultMorning() }),
+      evening: Object.assign({}, raw.evening, { items: defaultEvening() }),
+      totals: raw.totals || { today:0, best:0, streak:0, lastDate:null },
+    };
+    return { lang: raw.lang || 'en', activeUserId: a.id, users: [a] };
+  }
+  return initialState();
+}
+
+function rolloverIfNewDay(s) {
+  const t = todayStr();
+  function resetR(r) {
+    if (r.date === t) return r;
+    return { items: r.items.map(function(i){ return Object.assign({}, i, {status:'none'}); }), bonusAwarded:'none', date: t };
+  }
+  return Object.assign({}, s, {
+    users: s.users.map(function(u) {
+      var m = resetR(u.morning), e = resetR(u.evening);
+      var tots = u.totals;
+      if (tots.lastDate && tots.lastDate !== t) tots = Object.assign({}, tots, {today:0});
+      return Object.assign({}, u, {morning:m, evening:e, totals:tots});
+    })
+  });
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (!raw) return initialState();
+    return rolloverIfNewDay(migrate(JSON.parse(raw)));
+  } catch(e) { return initialState(); }
+}
+
+function saveState(s) {
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+function computeScore(r) {
+  var score = 0;
+  r.items.forEach(function(i) {
+    if (i.status === 'alone') score += POINTS.alone;
+    else if (i.status === 'help') score += POINTS.help;
+  });
+  var allDone = r.items.length > 0 && r.items.every(function(i){ return i.status !== 'none'; });
+  var allAlone = r.items.length > 0 && r.items.every(function(i){ return i.status === 'alone'; });
+  var bonus = allAlone ? BONUS.all + BONUS.champion : allDone ? BONUS.all : 0;
+  return { score:score, bonus:bonus, allDone:allDone, allAlone:allAlone };
+}
+
+function getActive(s) {
+  return s.users.find(function(u){ return u.id === s.activeUserId; }) || s.users[0];
+}
+
+function updateActive(s, fn) {
+  return Object.assign({}, s, {
+    users: s.users.map(function(u){ return u.id === s.activeUserId ? fn(u) : u; })
+  });
+}
+
+/* ================================================
+   APP STATE
+   ================================================ */
+var state = loadState();
+var activeTab = new Date().getHours() < 16 ? 'morning' : 'evening';
+var selectedIcon = 'star';
+var taskModalMode = 'add';
+var taskModalRoutine = 'morning';
+var taskModalItemId = null;
+var userFormMode = null; // null, 'add', 'edit'
+var userFormId = null;
+var userFormName = '';
+var userFormEmoji = '⭐';
+var confirmCb = null;
+
+/* ================================================
+   CONFETTI
+   ================================================ */
+function fireConfetti(kind) {
+  if (!window.confetti) return;
+  var colors = kind === 'champion'
+    ? ['#FFD700','#FF6B9D','#A78BFA','#34D399','#60A5FA']
+    : ['#A78BFA','#FBBF24','#F472B6'];
+  var count = kind === 'champion' ? 120 : 70;
+  function burst(ox, oy) {
+    confetti({ particleCount:count, spread:80, startVelocity:45, origin:{x:ox,y:oy}, colors:colors, scalar:1.1 });
+  }
+  burst(0.2, 0.6);
+  burst(0.8, 0.6);
+  if (kind === 'champion') setTimeout(function(){ burst(0.5, 0.5); }, 200);
+}
+
+/* ================================================
+   RENDER
+   ================================================ */
+function render() {
+  var t = T[state.lang];
+  var user = getActive(state);
+  var isRtl = state.lang === 'he';
+
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+  document.title = t.appTitle + ' • ' + user.name;
+
+  var routine = user[activeTab];
+  var sc = computeScore(routine);
+  var total = routine.items.length;
+  var done = routine.items.filter(function(i){ return i.status !== 'none'; }).length;
+  var pct = total === 0 ? 0 : Math.round((done/total)*100);
+
+  var headerCls = activeTab === 'morning' ? 'header-morning' : 'header-evening';
+  var greeting = activeTab === 'morning' ? t.goodMorning : t.goodEvening;
+  var tabIcon = activeTab === 'morning' ? 'sun' : 'moon';
+
+  var floats = '';
+  for (var i = 0; i < 6; i++) {
+    var left = 10 + i * 15;
+    var top = 10 + (i % 3) * 25;
+    var dur = 4 + i;
+    var dly = i * 0.3;
+    var ic = activeTab === 'morning' ? '<i data-lucide="sun"></i>' : '<i data-lucide="star"></i>';
+    floats += '<div class="float-icon" style="left:'+left+'%;top:'+top+'%;--dur:'+dur+'s;--delay:'+dly+'s">'+ic+'</div>';
+  }
+
+  var usersHtml = state.users.map(function(u) {
+    var cls = u.id === state.activeUserId ? 'upill-active' : 'upill-inactive';
+    return '<button class="user-pill '+cls+'" data-action="switch-user" data-id="'+u.id+'">'
+      + '<span class="upill-emoji">'+u.emoji+'</span>'
+      + '<span class="upill-name">'+esc(u.name)+'</span>'
+      + '</button>';
+  }).join('');
+  usersHtml += '<button class="manage-btn" data-action="open-manage">'
+    + '<i data-lucide="users"></i><i data-lucide="plus"></i></button>';
+
+  var statsHtml = '<div class="stats-grid">'
+    + statCard('star', t.today, user.totals.today)
+    + statCard('trophy', t.best, user.totals.best)
+    + statCard('flame', t.streak, user.totals.streak)
+    + '</div>';
+
+  var mornActive = activeTab === 'morning' ? ' tab-active-morning' : '';
+  var eveActive = activeTab === 'evening' ? ' tab-active-evening' : '';
+  var tabsHtml = '<div class="tab-bar">'
+    + '<button class="tab-btn'+mornActive+'" data-action="set-tab" data-value="morning"><i data-lucide="sun"></i> '+t.morning+'</button>'
+    + '<button class="tab-btn'+eveActive+'" data-action="set-tab" data-value="evening"><i data-lucide="moon"></i> '+t.evening+'</button>'
+    + '</div>';
+
+  var progressHtml = '<div class="progress-card">'
+    + '<div class="progress-top"><span class="progress-label">'+t.progress+'</span>'
+    + '<span class="progress-value">'+done+'/'+total+' • '+(sc.score+sc.bonus)+' '+t.points+'</span></div>'
+    + '<div class="progress-track"><div class="progress-fill pfill-'+activeTab+'" style="width:'+pct+'%"></div></div>';
+
+  if (sc.allDone || sc.allAlone) {
+    var bCls = sc.allAlone ? 'bonus-champ' : 'bonus-all';
+    var bLabel = sc.allAlone ? t.allAloneBonus : t.allDoneBonus;
+    progressHtml += '<div class="bonus-banner '+bCls+'">'
+      + '<i data-lucide="trophy"></i><span class="bonus-label">'+bLabel+'</span>'
+      + '<span class="bonus-pts">+'+sc.bonus+'</span></div>';
+  }
+  progressHtml += '</div>';
+
+  var itemsHtml = '';
+  if (routine.items.length === 0) {
+    itemsHtml = '<div class="empty-state">'+t.addFirst+'</div>';
+  } else {
+    routine.items.forEach(function(item) {
+      var label = state.lang === 'he' ? item.labelHe : item.labelEn;
+      var isDone = item.status !== 'none';
+      var cardCls = item.status === 'alone' ? ' task-card-alone' : item.status === 'help' ? ' task-card-help' : '';
+      var iconCls = isDone ? 'ticon-on' : 'ticon-off';
+
+      var subText = '';
+      if (item.status === 'alone') subText = '+2 '+t.points+' • '+t.alone;
+      else if (item.status === 'help') subText = '+1 '+t.points+' • '+t.withHelp;
+      else subText = t.notDone;
+
+      itemsHtml += '<div class="task-card'+cardCls+'">'
+        + '<div class="task-top">'
+        + '<div class="task-icon '+iconCls+'">'+iconSvg(item.icon)+'</div>'
+        + '<div class="task-info"><div class="task-label">'+esc(label)+'</div><div class="task-sub">'+subText+'</div></div>'
+        + '<button class="task-edit" data-action="open-edit-task" data-routine="'+activeTab+'" data-id="'+item.id+'" title="'+t.edit+'"><i data-lucide="settings-2"></i></button>'
+        + '</div>'
+        + '<div class="status-grid">'
+        + statusBtn(item, 'none', t.notDone, '', activeTab)
+        + statusBtn(item, 'help', t.withHelp, '+1', activeTab)
+        + statusBtn(item, 'alone', t.alone, '+2', activeTab)
+        + '</div></div>';
+    });
+  }
+
+  var addBtnHtml = '<button class="add-btn" data-action="open-add-task" data-routine="'+activeTab+'">'
+    + '<i data-lucide="plus"></i> '+t.addItem+'</button>';
+
+  var html = '<header class="header '+headerCls+'">'
+    + '<div class="floating-decor">'+floats+'</div>'
+    + '<div class="header-inner">'
+    + '<div class="header-top"><div class="title-area">'
+    + '<div class="title-icon-box"><i data-lucide="'+tabIcon+'"></i></div>'
+    + '<h1 class="app-title">'+t.appTitle+'</h1>'
+    + '</div><div class="header-btns">'
+    + '<button class="btn-h btn-h-text" data-action="toggle-lang"><i data-lucide="languages"></i> '+(state.lang==='en'?'עב':'EN')+'</button>'
+    + '<button class="btn-h btn-h-icon" data-action="open-reset" title="'+t.resetDay+'"><i data-lucide="rotate-ccw"></i></button>'
+    + '</div></div>'
+    + '<div class="user-switcher">'+usersHtml+'</div>'
+    + '<p class="greeting">'+greeting+' <b>'+esc(user.name)+'!</b></p>'
+    + statsHtml
+    + '</div></header>'
+    + '<main class="main-content">'+tabsHtml
+    + '<div class="routine-section">'+progressHtml
+    + '<div class="task-list">'+itemsHtml+'</div>'
+    + addBtnHtml+'</div></main>';
+
+  document.getElementById('app').innerHTML = html;
+  processIcons();
+}
+
+function statCard(icon, label, value) {
+  return '<div class="stat-card"><div class="stat-label"><i data-lucide="'+icon+'"></i><span>'+label+'</span></div>'
+    + '<div class="stat-value">'+value+'</div></div>';
+}
+
+function statusBtn(item, status, label, pts, routine) {
+  var isActive = item.status === status;
+  var cls;
+  if (status === 'none') cls = isActive ? 'sn-on' : 'sn';
+  else if (status === 'help') cls = isActive ? 'sh-on' : 'sh';
+  else cls = isActive ? 'sa-on' : 'sa';
+
+  var ptsHtml = pts ? '<span class="sbtn-pts">'+pts+'</span>' : '';
+  return '<button class="sbtn '+cls+'" data-action="set-status" data-routine="'+routine+'" data-id="'+item.id+'" data-value="'+status+'">'
+    + label + ptsHtml + '</button>';
+}
+
+/* ================================================
+   STATE UPDATERS
+   ================================================ */
+function setStatus(routine, itemId, status) {
+  state = updateActive(state, function(u) {
+    var r = u[routine];
+    return Object.assign({}, u, _routineObj(routine, Object.assign({}, r, {
+      items: r.items.map(function(i){ return i.id === itemId ? Object.assign({}, i, {status:status}) : i; })
+    })));
+  });
+  checkBonuses();
+  recomputeTotals();
+  saveState(state);
+  render();
+}
+
+function _routineObj(key, val) { var o = {}; o[key] = val; return o; }
+
+function checkBonuses() {
+  ['morning','evening'].forEach(function(k) {
+    var user = getActive(state);
+    var r = user[k];
+    var sc = computeScore(r);
+    var nb = sc.allAlone ? 'champion' : sc.allDone ? 'all' : 'none';
+    if (nb !== r.bonusAwarded) {
+      if (nb === 'all' || nb === 'champion') fireConfetti(nb);
+      state = updateActive(state, function(u) {
+        return Object.assign({}, u, _routineObj(k, Object.assign({}, u[k], {bonusAwarded: nb})));
+      });
+    }
+  });
+}
+
+function recomputeTotals() {
+  var user = getActive(state);
+  var ms = computeScore(user.morning), es = computeScore(user.evening);
+  var today = ms.score + ms.bonus + es.score + es.bonus;
+  var best = Math.max(user.totals.best, today);
+  var streak = user.totals.streak;
+  var lastDate = user.totals.lastDate;
+  if ((ms.allDone || es.allDone) && lastDate !== user.morning.date) {
+    var d = new Date(); d.setDate(d.getDate()-1);
+    var yesterday = d.toISOString().slice(0,10);
+    streak = lastDate === yesterday ? streak + 1 : 1;
+    lastDate = user.morning.date;
+  }
+  state = updateActive(state, function(u) {
+    return Object.assign({}, u, {totals: {today:today, best:best, streak:streak, lastDate:lastDate}});
+  });
+}
+
+function resetDay() {
+  state = updateActive(state, function(u) {
+    return Object.assign({}, u, {
+      morning: Object.assign({}, u.morning, {items: u.morning.items.map(function(i){return Object.assign({},i,{status:'none'});}), bonusAwarded:'none'}),
+      evening: Object.assign({}, u.evening, {items: u.evening.items.map(function(i){return Object.assign({},i,{status:'none'});}), bonusAwarded:'none'}),
+      totals: Object.assign({}, u.totals, {today: 0}),
+    });
+  });
+  saveState(state);
+  render();
+}
+
+function toggleLang() {
+  state = Object.assign({}, state, {lang: state.lang === 'en' ? 'he' : 'en'});
+  saveState(state);
+  render();
+}
+
+function switchUser(id) {
+  state = Object.assign({}, state, {activeUserId: id});
+  saveState(state);
+  render();
+}
+
+function addUser(name, emoji) {
+  var u = newUser(name.trim() || 'Kid', emoji);
+  state = Object.assign({}, state, {users: state.users.concat([u]), activeUserId: u.id});
+  saveState(state);
+  render();
+}
+
+function updateUser(id, name, emoji) {
+  state = Object.assign({}, state, {
+    users: state.users.map(function(u){ return u.id===id ? Object.assign({},u,{name:name.trim()||u.name, emoji:emoji}) : u; })
+  });
+  saveState(state);
+  render();
+}
+
+function removeUser(id) {
+  if (state.users.length <= 1) return;
+  var users = state.users.filter(function(u){ return u.id !== id; });
+  var aid = state.activeUserId === id ? users[0].id : state.activeUserId;
+  state = Object.assign({}, state, {users:users, activeUserId:aid});
+  saveState(state);
+  render();
+}
+
+function addTask(routine, item) {
+  state = updateActive(state, function(u) {
+    return Object.assign({}, u, _routineObj(routine, Object.assign({}, u[routine], {
+      items: u[routine].items.concat([item])
+    })));
+  });
+  saveState(state);
+  render();
+}
+
+function updateTask(routine, item) {
+  state = updateActive(state, function(u) {
+    return Object.assign({}, u, _routineObj(routine, Object.assign({}, u[routine], {
+      items: u[routine].items.map(function(i){ return i.id === item.id ? item : i; })
+    })));
+  });
+  saveState(state);
+  render();
+}
+
+function deleteTask(routine, id) {
+  state = updateActive(state, function(u) {
+    return Object.assign({}, u, _routineObj(routine, Object.assign({}, u[routine], {
+      items: u[routine].items.filter(function(i){ return i.id !== id; })
+    })));
+  });
+  checkBonuses();
+  recomputeTotals();
+  saveState(state);
+  render();
+}
+
+/* ================================================
+   MODALS
+   ================================================ */
+function openModal(html) {
+  var box = document.getElementById('modal-box');
+  box.innerHTML = html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  processIcons();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+function openConfirm(title, msg, cb) {
+  confirmCb = cb;
+  var t = T[state.lang];
+  document.getElementById('confirm-box').innerHTML =
+    '<div class="modal-header"><h2 class="modal-title">'+esc(title)+'</h2></div>'
+    + '<div class="modal-body"><p>'+esc(msg)+'</p></div>'
+    + '<div class="modal-footer"><div class="spacer"></div>'
+    + '<button class="btn btn-g" data-action="confirm-no">'+t.no+'</button>'
+    + '<button class="btn btn-p" data-action="confirm-yes">'+t.yes+'</button></div>';
+  document.getElementById('confirm-overlay').classList.remove('hidden');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.add('hidden');
+  confirmCb = null;
+}
+
+/* --- Manage Users Modal --- */
+function openManageModal() {
+  userFormMode = null;
+  renderManageModal();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function renderManageModal() {
+  var t = T[state.lang];
+  var listHtml = '<div class="ulist">';
+  state.users.forEach(function(u) {
+    listHtml += '<div class="urow">'
+      + '<div class="uav">'+u.emoji+'</div>'
+      + '<div class="uname">'+esc(u.name)+'</div>'
+      + '<button class="ibtn" data-action="start-edit-user" data-id="'+u.id+'" title="'+t.editUser+'"><i data-lucide="pencil"></i></button>'
+      + '<button class="ibtn ibtn-d" data-action="confirm-remove-user" data-id="'+u.id+'" title="'+t.deleteUser+'"'+(state.users.length<=1?' disabled':'')+'><i data-lucide="trash-2"></i></button>'
+      + '</div>';
+  });
+  listHtml += '</div>';
+
+  var formHtml = '';
+  if (userFormMode) {
+    formHtml = '<div class="uform">'
+      + '<div class="fg"><label class="fl">'+t.userName+'</label>'
+      + '<input type="text" class="inp" id="uf-name" value="'+esc(userFormName)+'" placeholder="'+t.userName+'"></div>'
+      + '<div class="fg"><label class="fl">'+t.userEmoji+'</label><div class="avatar-grid">';
+    AVATARS.forEach(function(e) {
+      formHtml += '<button class="avopt'+(e===userFormEmoji?' avopt-on':'')+'" data-action="pick-emoji" data-value="'+e+'">'+e+'</button>';
+    });
+    formHtml += '</div></div>'
+      + '<div class="uform-actions">'
+      + '<button class="btn btn-g" data-action="cancel-uform">'+t.cancel+'</button>'
+      + '<button class="btn btn-p" data-action="save-user"><i data-lucide="check"></i> '+t.save+'</button>'
+      + '</div></div>';
+  } else {
+    formHtml = '<button class="btn-full" data-action="start-add-user"><i data-lucide="plus"></i> '+t.addUser+'</button>';
+  }
+
+  var html = '<div class="modal-header"><h2 class="modal-title">'+t.manageUsers+'</h2></div>'
+    + '<div class="modal-body">'+listHtml+formHtml+'</div>';
+
+  document.getElementById('modal-box').innerHTML = html;
+  processIcons();
+}
+
+/* --- Task Modal --- */
+function openTaskModal(mode, routine, item) {
+  var t = T[state.lang];
+  taskModalMode = mode;
+  taskModalRoutine = routine;
+  taskModalItemId = item ? item.id : null;
+  selectedIcon = item ? item.icon : 'star';
+
+  var labelEn = item ? item.labelEn : '';
+  var labelHe = item ? item.labelHe : '';
+
+  var iconGridHtml = '<div class="icon-grid">';
+  ALL_ICON_KEYS.forEach(function(key) {
+    iconGridHtml += '<button class="icopt'+(key===selectedIcon?' icopt-on':'')+'" data-action="pick-icon" data-value="'+key+'" title="'+key+'">'+iconSvg(key)+'</button>';
+  });
+  iconGridHtml += '</div>';
+
+  var deleteBtn = mode === 'edit'
+    ? '<button class="btn btn-d" data-action="confirm-delete-task">'+t.delete+'</button>'
+    : '';
+
+  var html = '<div class="modal-header"><h2 class="modal-title">'+(mode==='add'?t.addItem:t.edit)+'</h2></div>'
+    + '<div class="modal-body">'
+    + '<div class="fg"><label class="fl" for="tf-en">English</label>'
+    + '<input type="text" class="inp" id="tf-en" value="'+esc(labelEn)+'" placeholder="'+t.addItemPlaceholder+'" dir="ltr"></div>'
+    + '<div class="fg"><label class="fl" for="tf-he">עברית</label>'
+    + '<input type="text" class="inp" id="tf-he" value="'+esc(labelHe)+'" placeholder="'+T.he.addItemPlaceholder+'" dir="rtl"></div>'
+    + '<div class="fg"><label class="fl">'+t.pickIcon+'</label>'+iconGridHtml+'</div>'
+    + '</div>'
+    + '<div class="modal-footer">'+deleteBtn+'<div class="spacer"></div>'
+    + '<button class="btn btn-g" data-action="close-modal">'+t.cancel+'</button>'
+    + '<button class="btn btn-p" data-action="save-task">'+t.save+'</button></div>';
+
+  openModal(html);
+}
+
+function saveTaskFromModal() {
+  var en = (document.getElementById('tf-en').value || '').trim();
+  var he = (document.getElementById('tf-he').value || '').trim();
+  en = en || he || 'Task';
+  he = he || en || 'משימה';
+
+  if (taskModalMode === 'add') {
+    addTask(taskModalRoutine, {
+      id: 'c' + Date.now(),
+      labelEn: en, labelHe: he, icon: selectedIcon, status: 'none'
+    });
+  } else {
+    var user = getActive(state);
+    var existing = user[taskModalRoutine].items.find(function(i){ return i.id === taskModalItemId; });
+    if (existing) {
+      updateTask(taskModalRoutine, Object.assign({}, existing, {
+        labelEn: en, labelHe: he, icon: selectedIcon
+      }));
+    }
+  }
+  closeModal();
+}
+
+/* ================================================
+   EVENT DELEGATION
+   ================================================ */
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-action]');
+  if (!btn) return;
+
+  var action = btn.dataset.action;
+  var id = btn.dataset.id;
+  var value = btn.dataset.value;
+  var routine = btn.dataset.routine;
+  var t = T[state.lang];
+
+  switch (action) {
+    case 'set-tab':
+      activeTab = value;
+      render();
+      break;
+
+    case 'toggle-lang':
+      toggleLang();
+      break;
+
+    case 'open-reset':
+      openConfirm(t.resetDay, t.confirmReset, function(){ resetDay(); });
+      break;
+
+    case 'switch-user':
+      switchUser(id);
+      break;
+
+    case 'open-manage':
+      openManageModal();
+      break;
+
+    case 'set-status':
+      setStatus(routine, id, value);
+      break;
+
+    case 'open-add-task':
+      openTaskModal('add', routine);
+      break;
+
+    case 'open-edit-task': {
+      var user = getActive(state);
+      var item = user[routine].items.find(function(i){ return i.id === id; });
+      if (item) openTaskModal('edit', routine, item);
+      break;
+    }
+
+    case 'save-task':
+      saveTaskFromModal();
+      break;
+
+    case 'confirm-delete-task':
+      openConfirm(t.confirmDelete, t.confirmDelete, function(){
+        deleteTask(taskModalRoutine, taskModalItemId);
+        closeModal();
+      });
+      break;
+
+    case 'pick-icon':
+      selectedIcon = value;
+      document.querySelectorAll('.icopt').forEach(function(el) {
+        el.classList.toggle('icopt-on', el.dataset.value === value);
+      });
+      break;
+
+    case 'close-modal':
+      closeModal();
+      break;
+
+    case 'confirm-yes':
+      if (confirmCb) { var cb = confirmCb; closeConfirm(); cb(); }
+      break;
+
+    case 'confirm-no':
+      closeConfirm();
+      break;
+
+    // Manage users actions
+    case 'start-add-user':
+      userFormMode = 'add';
+      userFormId = null;
+      userFormName = '';
+      userFormEmoji = '⭐';
+      renderManageModal();
+      break;
+
+    case 'start-edit-user': {
+      var eu = state.users.find(function(u){ return u.id === id; });
+      if (eu) {
+        userFormMode = 'edit';
+        userFormId = eu.id;
+        userFormName = eu.name;
+        userFormEmoji = eu.emoji;
+        renderManageModal();
+      }
+      break;
+    }
+
+    case 'pick-emoji':
+      userFormEmoji = value;
+      document.querySelectorAll('.avopt').forEach(function(el) {
+        el.classList.toggle('avopt-on', el.dataset.value === value);
+      });
+      break;
+
+    case 'cancel-uform':
+      userFormMode = null;
+      renderManageModal();
+      break;
+
+    case 'save-user': {
+      var nameInput = document.getElementById('uf-name');
+      var n = nameInput ? nameInput.value : '';
+      if (userFormMode === 'add') {
+        addUser(n, userFormEmoji);
+      } else if (userFormMode === 'edit' && userFormId) {
+        updateUser(userFormId, n, userFormEmoji);
+      }
+      userFormMode = null;
+      renderManageModal();
+      break;
+    }
+
+    case 'confirm-remove-user':
+      if (state.users.length <= 1) break;
+      openConfirm(t.deleteUser, t.confirmDeleteUser, function(){
+        removeUser(id);
+        renderManageModal();
+      });
+      break;
+  }
+});
+
+/* ================================================
+   INIT
+   ================================================ */
+render();
+</script>
+</body>
 </html>
