@@ -1,6 +1,17 @@
 export type Lang = "en" | "he";
 
-export const translations = {
+export type Dictionary = {
+  appTitle: string; morning: string; evening: string; addItem: string;
+  addItemPlaceholder: string; pickIcon: string; save: string; cancel: string;
+  delete: string; edit: string; notDone: string; withHelp: string; alone: string;
+  score: string; today: string; best: string; streak: string; bonus: string;
+  allDoneBonus: string; allAloneBonus: string; resetDay: string; confirmReset: string;
+  confirmDelete: string; yes: string; no: string; settings: string; language: string;
+  points: string; progress: string; goodMorning: string; goodEvening: string;
+  keepGoing: string; almostThere: string; youDidIt: string; addFirst: string;
+};
+
+export const translations: Record<Lang, Dictionary> = {
   en: {
     appTitle: "Get Ready!",
     morning: "Morning",
