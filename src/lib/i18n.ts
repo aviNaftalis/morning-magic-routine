@@ -9,6 +9,9 @@ export type Dictionary = {
   confirmDelete: string; yes: string; no: string; settings: string; language: string;
   points: string; progress: string; goodMorning: string; goodEvening: string;
   keepGoing: string; almostThere: string; youDidIt: string; addFirst: string;
+  users: string; addUser: string; userName: string; userEmoji: string;
+  switchUser: string; manageUsers: string; deleteUser: string;
+  confirmDeleteUser: string; cantDeleteLast: string; editUser: string;
 };
 
 export const translations: Record<Lang, Dictionary> = {
