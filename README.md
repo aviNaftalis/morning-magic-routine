@@ -1,3 +1,5 @@
-# Welcome to your Lovable project
+# Get Ready!
 
-TODO: Document your project here
+A fun bilingual (English/Hebrew) morning & evening routine checklist for kids.
+
+**Live app: https://avinaftalis.github.io/morning-magic-routine/**
