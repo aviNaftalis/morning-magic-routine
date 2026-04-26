@@ -218,7 +218,7 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
   );
 }
 
-function ResetButton({ t, onReset }: { t: typeof translations.en; onReset: () => void }) {
+function ResetButton({ t, onReset }: { t: Dictionary; onReset: () => void }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -245,7 +245,7 @@ function RoutineView({
 }: {
   routineKey: RoutineKey;
   state: AppState;
-  t: typeof translations.en;
+  t: Dictionary;
   isRtl: boolean;
   onStatus: (id: string, s: ItemStatus) => void;
   onAdd: (i: ChecklistItem) => void;
@@ -327,7 +327,7 @@ function ItemCard({
   item, t, lang, onStatus, onUpdate, onDelete, isRtl,
 }: {
   item: ChecklistItem;
-  t: typeof translations.en;
+  t: Dictionary;
   lang: Lang;
   onStatus: (s: ItemStatus) => void;
   onUpdate: (i: ChecklistItem) => void;
@@ -416,7 +416,7 @@ function StatusButton({
 function AddOrEditDialog({
   t, lang, onSave, onDelete, mode, existing,
 }: {
-  t: typeof translations.en;
+  t: Dictionary;
   lang: Lang;
   onSave: (i: ChecklistItem) => void;
   onDelete?: () => void;
